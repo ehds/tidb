@@ -943,8 +943,8 @@ func GetExplainRowsForPlan(plan Plan) (rows [][]string) {
 // prepareSchema prepares explain's result schema.
 func (e *Explain) prepareSchema() error {
 	var fieldNames []string
+	e.Format = ast.ExplainFormatJSON
 	format := strings.ToLower(e.Format)
-
 	switch {
 	case format == ast.ExplainFormatROW && (!e.Analyze && e.RuntimeStatsColl == nil):
 		fieldNames = []string{"id", "estRows", "task", "access object", "operator info"}
@@ -978,6 +978,10 @@ func (e *Explain) RenderResult() error {
 	if e.TargetPlan == nil {
 		return nil
 	}
+	if e.Analyze {
+		e.Format = ast.ExplainFormatJSON
+	}
+	//format := "json"
 	switch strings.ToLower(e.Format) {
 	case ast.ExplainFormatROW:
 		if e.Rows == nil || e.Analyze {
@@ -1227,6 +1231,10 @@ type JSONOperatorRow struct {
 	Task         string             `json:"task"`
 	AccessObject string             `json:"accessObject"`
 	OperatorInfo string             `json:"operatorInfo"`
+	AnalyzeInfo  string             `json:"analyzeInfo`
+	ActRows      string             `json:"actRows`
+	MemoryInfo   string             `json:"memoryInfo`
+	DisckInfo    string             `json:"DisckInfo`
 	Children     []*JSONOperatorRow `json:"children"`
 }
 
@@ -1242,6 +1250,15 @@ func (e *Explain) prepareJSONOperatorInfo(currentNode *JSONOperatorRow, p Plan, 
 		err        error
 	)
 	tmpEstRows, currentNode.AccessObject, currentNode.OperatorInfo = e.getOperatorInfo(p, currentNode.ID)
+	actRows, analyzeInfo, memoryInfo, diskInfo := getRuntimeInfo(e.ctx, p, nil)
+
+	if e.Analyze {
+		currentNode.ActRows = actRows
+		currentNode.AnalyzeInfo = analyzeInfo
+		currentNode.MemoryInfo = memoryInfo
+		currentNode.DisckInfo = diskInfo
+	}
+
 	if currentNode.EstRows, err = strconv.ParseFloat(tmpEstRows, 64); err != nil {
 		currentNode.EstRows = 0
 	}
@@ -1287,8 +1304,6 @@ func (e *Explain) explainPlanInJSONFormat(currentNode *JSONOperatorRow, p Plan, 
 			buildSide = plan.InnerChildIdx ^ 1
 		case *PhysicalIndexHashJoin:
 			buildSide = plan.InnerChildIdx ^ 1
-		case *PhysicalBroadCastJoin:
-			buildSide = plan.InnerChildIdx
 		}
 
 		if buildSide != -1 {

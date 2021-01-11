@@ -15,6 +15,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"math"
 
 	"github.com/pingcap/errors"
@@ -184,12 +185,17 @@ func enableParallelApply(sctx sessionctx.Context, plan PhysicalPlan) PhysicalPla
 
 func logicalOptimize(ctx context.Context, flag uint64, logic LogicalPlan) (LogicalPlan, error) {
 	var err error
+	fmt.Println(optRuleList)
 	for i, rule := range optRuleList {
 		// The order of flags is same as the order of optRule in the list.
 		// We use a bitmask to record which opt rules should be used. If the i-th bit is 1, it means we should
 		// apply i-th optimizing rule.
 		if flag&(1<<uint(i)) == 0 || isLogicalRuleDisabled(rule) {
 			continue
+		}
+		if _, ok := rule.(*joinReOrderSolver); ok {
+			fmt.Print("rule reorder");
+
 		}
 		logic, err = rule.optimize(ctx, logic)
 		if err != nil {

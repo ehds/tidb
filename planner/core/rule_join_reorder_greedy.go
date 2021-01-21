@@ -14,11 +14,15 @@
 package core
 
 import (
+	"context"
+	"log"
 	"math"
 	"sort"
+	"time"
 
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/tidb/expression"
+	"google.golang.org/grpc"
 )
 
 type joinReorderGreedySolver struct {
@@ -75,8 +79,11 @@ func (s *joinReorderGreedySolver) constructConnectedJoinTree() (*jrNode, error) 
 		bestIdx := -1
 		var finalRemainOthers []expression.Expression
 		var bestJoin LogicalPlan
+		var testActions []LogicalPlan
 		for i, node := range s.curJoinGroup {
 			newJoin, remainOthers := s.checkConnectionAndMakeJoin(curJoinTree.p, node.p)
+			testActions = append(testActions, node.p)
+			s.getAction(curJoinTree.p, testActions)
 			if newJoin == nil {
 				continue
 			}
@@ -129,4 +136,61 @@ func (s *joinReorderGreedySolver) checkConnectionAndMakeJoin(leftNode, rightNode
 		return expression.ExprFromSchema(expr, mergedSchema)
 	})
 	return s.newJoinWithEdges(leftNode, rightNode, usedEdges, otherConds), remainOtherConds
+}
+
+func encodeLogicalPlan(p LogicalPlan) *LogicalJoinNode {
+	var joinNode = LogicalJoinNode{}
+	joinNode.Tp = p.TP()
+	for _, node := range p.Children() {
+		joinNode.Childrens = append(joinNode.Childrens, encodeLogicalPlan(node))
+	}
+	if join, isJoin := p.(*LogicalJoin); isJoin {
+		for _, condition := range join.EqualConditions {
+			var args []string
+			funcname := condition.FuncName.String()
+			for _, arg := range condition.GetArgs() {
+				args = append(args, arg.String())
+			}
+			joinNode.Conditions = append(joinNode.Conditions, &LogicalJoinNode_Condition{Funcname: funcname, Args: args})
+		}
+	}
+	if dataSource, isDataSource := p.(*DataSource); isDataSource {
+		for _, condition := range dataSource.allConds {
+			if scalarFunc, isScalar := condition.(*expression.ScalarFunction); isScalar {
+				var args []string
+				funcname := scalarFunc.FuncName.String()
+				for _, arg := range scalarFunc.GetArgs() {
+					args = append(args, arg.String())
+				}
+				joinNode.Conditions = append(joinNode.Conditions, &LogicalJoinNode_Condition{Funcname: funcname, Args: args})
+			}
+		}
+	}
+	return &joinNode
+}
+func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []LogicalPlan) (int, error) {
+	address := "127.0.0.1:50051"
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect %v", err)
+	}
+	defer conn.Close()
+
+	joinOrderClient := NewJoinOrderClient(conn)
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	//defer cancel()
+	state := State{}
+	state.CurrentJoinTree = encodeLogicalPlan(curJoinTree)
+	for _, action := range actions {
+		state.Actions = append(state.Actions, encodeLogicalPlan(action))
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := joinOrderClient.GetAction(ctx, &state)
+	if err != nil {
+		log.Fatalf("could not greet :%v", err)
+		return 0, nil
+	}
+	log.Printf("Greeting: %s", r.GetMessage())
+	return 1, nil
 }

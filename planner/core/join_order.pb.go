@@ -122,20 +122,173 @@ func (m *HelloReply) GetMessage() string {
 	return ""
 }
 
+type Condition struct {
+	Funcname             string   `protobuf:"bytes,1,opt,name=funcname,proto3" json:"funcname,omitempty"`
+	Args                 []string `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Condition) Reset()         { *m = Condition{} }
+func (m *Condition) String() string { return proto.CompactTextString(m) }
+func (*Condition) ProtoMessage()    {}
+func (*Condition) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c8f4ec49c8a111ab, []int{2}
+}
+func (m *Condition) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Condition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Condition.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Condition) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Condition.Merge(m, src)
+}
+func (m *Condition) XXX_Size() int {
+	return m.Size()
+}
+func (m *Condition) XXX_DiscardUnknown() {
+	xxx_messageInfo_Condition.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Condition proto.InternalMessageInfo
+
+func (m *Condition) GetFuncname() string {
+	if m != nil {
+		return m.Funcname
+	}
+	return ""
+}
+
+func (m *Condition) GetArgs() []string {
+	if m != nil {
+		return m.Args
+	}
+	return nil
+}
+
+type LogicalNode struct {
+	// Types that are valid to be assigned to Node:
+	//	*LogicalNode_JoinNode
+	//	*LogicalNode_TableNode
+	Node                 isLogicalNode_Node `protobuf_oneof:"node"`
+	Childrens            []*LogicalNode     `protobuf:"bytes,3,rep,name=childrens,proto3" json:"childrens,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *LogicalNode) Reset()         { *m = LogicalNode{} }
+func (m *LogicalNode) String() string { return proto.CompactTextString(m) }
+func (*LogicalNode) ProtoMessage()    {}
+func (*LogicalNode) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c8f4ec49c8a111ab, []int{3}
+}
+func (m *LogicalNode) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LogicalNode) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LogicalNode.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LogicalNode) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogicalNode.Merge(m, src)
+}
+func (m *LogicalNode) XXX_Size() int {
+	return m.Size()
+}
+func (m *LogicalNode) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogicalNode.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LogicalNode proto.InternalMessageInfo
+
+type isLogicalNode_Node interface {
+	isLogicalNode_Node()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type LogicalNode_JoinNode struct {
+	JoinNode *LogicalJoinNode `protobuf:"bytes,1,opt,name=join_node,json=joinNode,proto3,oneof" json:"join_node,omitempty"`
+}
+type LogicalNode_TableNode struct {
+	TableNode *LogicalTableNode `protobuf:"bytes,2,opt,name=table_node,json=tableNode,proto3,oneof" json:"table_node,omitempty"`
+}
+
+func (*LogicalNode_JoinNode) isLogicalNode_Node()  {}
+func (*LogicalNode_TableNode) isLogicalNode_Node() {}
+
+func (m *LogicalNode) GetNode() isLogicalNode_Node {
+	if m != nil {
+		return m.Node
+	}
+	return nil
+}
+
+func (m *LogicalNode) GetJoinNode() *LogicalJoinNode {
+	if x, ok := m.GetNode().(*LogicalNode_JoinNode); ok {
+		return x.JoinNode
+	}
+	return nil
+}
+
+func (m *LogicalNode) GetTableNode() *LogicalTableNode {
+	if x, ok := m.GetNode().(*LogicalNode_TableNode); ok {
+		return x.TableNode
+	}
+	return nil
+}
+
+func (m *LogicalNode) GetChildrens() []*LogicalNode {
+	if m != nil {
+		return m.Childrens
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*LogicalNode) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*LogicalNode_JoinNode)(nil),
+		(*LogicalNode_TableNode)(nil),
+	}
+}
+
 type LogicalJoinNode struct {
-	Tp                   string                       `protobuf:"bytes,1,opt,name=tp,proto3" json:"tp,omitempty"`
-	Childrens            []*LogicalJoinNode           `protobuf:"bytes,2,rep,name=childrens,proto3" json:"childrens,omitempty"`
-	Conditions           []*LogicalJoinNode_Condition `protobuf:"bytes,3,rep,name=conditions,proto3" json:"conditions,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
-	XXX_unrecognized     []byte                       `json:"-"`
-	XXX_sizecache        int32                        `json:"-"`
+	Tp                   string              `protobuf:"bytes,1,opt,name=tp,proto3" json:"tp,omitempty"`
+	JoinType             string              `protobuf:"bytes,2,opt,name=join_type,json=joinType,proto3" json:"join_type,omitempty"`
+	JoinChildrens        []*LogicalJoinNode  `protobuf:"bytes,3,rep,name=join_childrens,json=joinChildrens,proto3" json:"join_childrens,omitempty"`
+	TableChildrens       []*LogicalTableNode `protobuf:"bytes,4,rep,name=table_childrens,json=tableChildrens,proto3" json:"table_childrens,omitempty"`
+	Conditions           []*Condition        `protobuf:"bytes,5,rep,name=conditions,proto3" json:"conditions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
 }
 
 func (m *LogicalJoinNode) Reset()         { *m = LogicalJoinNode{} }
 func (m *LogicalJoinNode) String() string { return proto.CompactTextString(m) }
 func (*LogicalJoinNode) ProtoMessage()    {}
 func (*LogicalJoinNode) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8f4ec49c8a111ab, []int{2}
+	return fileDescriptor_c8f4ec49c8a111ab, []int{4}
 }
 func (m *LogicalJoinNode) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -171,40 +324,55 @@ func (m *LogicalJoinNode) GetTp() string {
 	return ""
 }
 
-func (m *LogicalJoinNode) GetChildrens() []*LogicalJoinNode {
+func (m *LogicalJoinNode) GetJoinType() string {
 	if m != nil {
-		return m.Childrens
+		return m.JoinType
+	}
+	return ""
+}
+
+func (m *LogicalJoinNode) GetJoinChildrens() []*LogicalJoinNode {
+	if m != nil {
+		return m.JoinChildrens
 	}
 	return nil
 }
 
-func (m *LogicalJoinNode) GetConditions() []*LogicalJoinNode_Condition {
+func (m *LogicalJoinNode) GetTableChildrens() []*LogicalTableNode {
+	if m != nil {
+		return m.TableChildrens
+	}
+	return nil
+}
+
+func (m *LogicalJoinNode) GetConditions() []*Condition {
 	if m != nil {
 		return m.Conditions
 	}
 	return nil
 }
 
-type LogicalJoinNode_Condition struct {
-	Funcname             string   `protobuf:"bytes,1,opt,name=funcname,proto3" json:"funcname,omitempty"`
-	Args                 []string `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+type LogicalTableNode struct {
+	Tp                   string       `protobuf:"bytes,1,opt,name=tp,proto3" json:"tp,omitempty"`
+	TableName            string       `protobuf:"bytes,2,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
+	Conditions           []*Condition `protobuf:"bytes,3,rep,name=conditions,proto3" json:"conditions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
-func (m *LogicalJoinNode_Condition) Reset()         { *m = LogicalJoinNode_Condition{} }
-func (m *LogicalJoinNode_Condition) String() string { return proto.CompactTextString(m) }
-func (*LogicalJoinNode_Condition) ProtoMessage()    {}
-func (*LogicalJoinNode_Condition) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8f4ec49c8a111ab, []int{2, 0}
+func (m *LogicalTableNode) Reset()         { *m = LogicalTableNode{} }
+func (m *LogicalTableNode) String() string { return proto.CompactTextString(m) }
+func (*LogicalTableNode) ProtoMessage()    {}
+func (*LogicalTableNode) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c8f4ec49c8a111ab, []int{5}
 }
-func (m *LogicalJoinNode_Condition) XXX_Unmarshal(b []byte) error {
+func (m *LogicalTableNode) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *LogicalJoinNode_Condition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *LogicalTableNode) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_LogicalJoinNode_Condition.Marshal(b, m, deterministic)
+		return xxx_messageInfo_LogicalTableNode.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -214,45 +382,52 @@ func (m *LogicalJoinNode_Condition) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *LogicalJoinNode_Condition) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LogicalJoinNode_Condition.Merge(m, src)
+func (m *LogicalTableNode) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogicalTableNode.Merge(m, src)
 }
-func (m *LogicalJoinNode_Condition) XXX_Size() int {
+func (m *LogicalTableNode) XXX_Size() int {
 	return m.Size()
 }
-func (m *LogicalJoinNode_Condition) XXX_DiscardUnknown() {
-	xxx_messageInfo_LogicalJoinNode_Condition.DiscardUnknown(m)
+func (m *LogicalTableNode) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogicalTableNode.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_LogicalJoinNode_Condition proto.InternalMessageInfo
+var xxx_messageInfo_LogicalTableNode proto.InternalMessageInfo
 
-func (m *LogicalJoinNode_Condition) GetFuncname() string {
+func (m *LogicalTableNode) GetTp() string {
 	if m != nil {
-		return m.Funcname
+		return m.Tp
 	}
 	return ""
 }
 
-func (m *LogicalJoinNode_Condition) GetArgs() []string {
+func (m *LogicalTableNode) GetTableName() string {
 	if m != nil {
-		return m.Args
+		return m.TableName
+	}
+	return ""
+}
+
+func (m *LogicalTableNode) GetConditions() []*Condition {
+	if m != nil {
+		return m.Conditions
 	}
 	return nil
 }
 
 type State struct {
-	CurrentJoinTree      *LogicalJoinNode   `protobuf:"bytes,1,opt,name=current_join_tree,json=currentJoinTree,proto3" json:"current_join_tree,omitempty"`
-	Actions              []*LogicalJoinNode `protobuf:"bytes,2,rep,name=actions,proto3" json:"actions,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	CurrentJoinTree      *LogicalNode   `protobuf:"bytes,1,opt,name=current_join_tree,json=currentJoinTree,proto3" json:"current_join_tree,omitempty"`
+	Actions              []*LogicalNode `protobuf:"bytes,2,rep,name=actions,proto3" json:"actions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *State) Reset()         { *m = State{} }
 func (m *State) String() string { return proto.CompactTextString(m) }
 func (*State) ProtoMessage()    {}
 func (*State) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c8f4ec49c8a111ab, []int{3}
+	return fileDescriptor_c8f4ec49c8a111ab, []int{6}
 }
 func (m *State) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -281,14 +456,14 @@ func (m *State) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_State proto.InternalMessageInfo
 
-func (m *State) GetCurrentJoinTree() *LogicalJoinNode {
+func (m *State) GetCurrentJoinTree() *LogicalNode {
 	if m != nil {
 		return m.CurrentJoinTree
 	}
 	return nil
 }
 
-func (m *State) GetActions() []*LogicalJoinNode {
+func (m *State) GetActions() []*LogicalNode {
 	if m != nil {
 		return m.Actions
 	}
@@ -298,43 +473,54 @@ func (m *State) GetActions() []*LogicalJoinNode {
 func init() {
 	proto.RegisterType((*HelloRequest)(nil), "join_order.HelloRequest")
 	proto.RegisterType((*HelloReply)(nil), "join_order.HelloReply")
+	proto.RegisterType((*Condition)(nil), "join_order.Condition")
+	proto.RegisterType((*LogicalNode)(nil), "join_order.LogicalNode")
 	proto.RegisterType((*LogicalJoinNode)(nil), "join_order.LogicalJoinNode")
-	proto.RegisterType((*LogicalJoinNode_Condition)(nil), "join_order.LogicalJoinNode.Condition")
+	proto.RegisterType((*LogicalTableNode)(nil), "join_order.LogicalTableNode")
 	proto.RegisterType((*State)(nil), "join_order.State")
 }
 
 func init() { proto.RegisterFile("join_order.proto", fileDescriptor_c8f4ec49c8a111ab) }
 
 var fileDescriptor_c8f4ec49c8a111ab = []byte{
-	// 444 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x93, 0xd1, 0x6a, 0x14, 0x31,
-	0x14, 0x86, 0x9b, 0xad, 0xba, 0x9d, 0x63, 0x75, 0x6d, 0x2e, 0x64, 0xd8, 0xc2, 0x50, 0x06, 0x95,
-	0x5e, 0xcd, 0xc0, 0x8a, 0xa0, 0x08, 0x42, 0x5b, 0xca, 0x8a, 0x88, 0x96, 0x69, 0x41, 0xf0, 0xa6,
-	0x64, 0x33, 0xa7, 0xb3, 0x91, 0x4c, 0x12, 0x33, 0x19, 0x74, 0x9f, 0xc0, 0x1b, 0xf1, 0xda, 0x47,
-	0xf2, 0xd2, 0x47, 0x28, 0xeb, 0x8b, 0xc8, 0x64, 0x77, 0xb6, 0x83, 0xe8, 0x2a, 0xde, 0x9d, 0xe4,
-	0xfc, 0x5f, 0xf8, 0xff, 0x9c, 0x04, 0xee, 0xbc, 0xd3, 0x42, 0x9d, 0x6b, 0x9b, 0xa3, 0x4d, 0x8c,
-	0xd5, 0x4e, 0x53, 0xb8, 0xda, 0x89, 0x63, 0xd8, 0x7e, 0x8e, 0x52, 0xea, 0x0c, 0xdf, 0xd7, 0x58,
-	0x39, 0x4a, 0xe1, 0x9a, 0x62, 0x25, 0x86, 0x64, 0x8f, 0xec, 0x07, 0x99, 0xaf, 0xe3, 0x07, 0x00,
-	0x4b, 0x8d, 0x91, 0x33, 0x1a, 0x42, 0xbf, 0xc4, 0xaa, 0x62, 0x45, 0x2b, 0x6a, 0x97, 0xf1, 0x25,
-	0x81, 0xc1, 0x4b, 0x5d, 0x08, 0xce, 0xe4, 0x0b, 0x2d, 0xd4, 0x2b, 0x9d, 0x23, 0xbd, 0x0d, 0x3d,
-	0x67, 0x96, 0xc2, 0x9e, 0x33, 0xf4, 0x09, 0x04, 0x7c, 0x2a, 0x64, 0x6e, 0x51, 0x55, 0x61, 0x6f,
-	0x6f, 0x73, 0xff, 0xe6, 0x68, 0x37, 0xe9, 0x38, 0xfc, 0x85, 0xcf, 0xae, 0xd4, 0xf4, 0x18, 0x80,
-	0x6b, 0x95, 0x0b, 0x27, 0xb4, 0xaa, 0xc2, 0x4d, 0xcf, 0xde, 0x5f, 0xc3, 0x26, 0x47, 0xad, 0x3a,
-	0xeb, 0x80, 0xc3, 0xa7, 0x10, 0xac, 0x1a, 0x74, 0x08, 0x5b, 0x17, 0xb5, 0xe2, 0x9d, 0xc8, 0xab,
-	0x75, 0x73, 0x15, 0xcc, 0x16, 0x0b, 0x97, 0x41, 0xe6, 0xeb, 0xf8, 0x13, 0x81, 0xeb, 0xa7, 0x8e,
-	0x39, 0xa4, 0x63, 0xd8, 0xe1, 0xb5, 0xb5, 0xa8, 0xdc, 0xb9, 0xb7, 0xe0, 0x2c, 0x2e, 0x8e, 0xf8,
-	0x4b, 0xa0, 0xc1, 0x92, 0x6a, 0x36, 0xce, 0x2c, 0x22, 0x7d, 0x04, 0x7d, 0xc6, 0x17, 0x99, 0xfe,
-	0xe1, 0x3e, 0x5a, 0xed, 0xe8, 0x0b, 0x81, 0xfe, 0xd8, 0x22, 0x3a, 0xb4, 0xf4, 0x19, 0x6c, 0x9d,
-	0xb2, 0x99, 0x9f, 0x11, 0x0d, 0xbb, 0x74, 0x77, 0xb4, 0xc3, 0xbb, 0xbf, 0xe9, 0x18, 0x39, 0x8b,
-	0x37, 0xe8, 0x11, 0xdc, 0x6a, 0xf9, 0x83, 0x82, 0x09, 0xf5, 0x3f, 0x87, 0x8c, 0x3e, 0x13, 0x08,
-	0x1a, 0x9b, 0xaf, 0x9b, 0x16, 0x3d, 0x86, 0xed, 0x33, 0xac, 0xdc, 0xea, 0x1d, 0xac, 0x0b, 0xb5,
-	0xc6, 0xd9, 0x63, 0x08, 0xc6, 0xe8, 0x0e, 0x7c, 0x66, 0xba, 0xd3, 0x95, 0xf9, 0x29, 0xfc, 0x99,
-	0x3c, 0xbc, 0xf8, 0x36, 0x8f, 0xc8, 0xf7, 0x79, 0x44, 0x2e, 0xe7, 0x11, 0xf9, 0xfa, 0x23, 0xda,
-	0x80, 0x5d, 0xa1, 0x93, 0xc2, 0x1a, 0x9e, 0xe0, 0x47, 0x56, 0x1a, 0x89, 0x55, 0x32, 0x6d, 0x80,
-	0x0f, 0xda, 0xca, 0xfc, 0x70, 0xe0, 0xe1, 0x37, 0x4d, 0x7d, 0xd2, 0x7c, 0x92, 0x13, 0xf2, 0xf6,
-	0x5e, 0x21, 0xdc, 0xb4, 0x9e, 0x24, 0x5c, 0x97, 0xa9, 0x11, 0xaa, 0xe0, 0xcc, 0xa4, 0x4e, 0xe4,
-	0x93, 0xd4, 0x48, 0xa6, 0x14, 0xda, 0x94, 0x6b, 0x8b, 0x93, 0x1b, 0xfe, 0x4f, 0x3d, 0xfc, 0x19,
-	0x00, 0x00, 0xff, 0xff, 0x5f, 0xcc, 0x1a, 0x28, 0x67, 0x03, 0x00, 0x00,
+	// 580 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xdd, 0x6e, 0xd3, 0x4c,
+	0x10, 0xad, 0x9d, 0xfe, 0x79, 0xfa, 0x93, 0x76, 0xa5, 0xef, 0xc3, 0x6a, 0x21, 0xaa, 0x2c, 0x84,
+	0x7a, 0xe5, 0x88, 0xa0, 0x4a, 0x08, 0x04, 0x52, 0x13, 0x55, 0xad, 0x10, 0x82, 0xca, 0x8d, 0x84,
+	0xc4, 0x4d, 0xb5, 0xb1, 0xa7, 0x8e, 0x2b, 0x67, 0x77, 0x59, 0x6f, 0x44, 0x73, 0x05, 0x0f, 0x80,
+	0xb8, 0xe6, 0x8d, 0xe0, 0x92, 0x47, 0x40, 0xe1, 0x45, 0xd0, 0xae, 0xed, 0xc4, 0x84, 0x34, 0x42,
+	0xdc, 0xed, 0x7a, 0xce, 0x39, 0x33, 0x73, 0x66, 0xbc, 0xb0, 0x73, 0xcd, 0x13, 0x76, 0xc9, 0x65,
+	0x84, 0xd2, 0x17, 0x92, 0x2b, 0x4e, 0x60, 0xfa, 0xc5, 0xf3, 0x60, 0xf3, 0x0c, 0xd3, 0x94, 0x07,
+	0xf8, 0x6e, 0x88, 0x99, 0x22, 0x04, 0x96, 0x19, 0x1d, 0xa0, 0x6b, 0x1d, 0x58, 0x87, 0x4e, 0x60,
+	0xce, 0xde, 0x03, 0x80, 0x02, 0x23, 0xd2, 0x11, 0x71, 0x61, 0x6d, 0x80, 0x59, 0x46, 0xe3, 0x12,
+	0x54, 0x5e, 0xbd, 0xa7, 0xe0, 0x74, 0x38, 0x8b, 0x12, 0x95, 0x70, 0x46, 0xf6, 0x60, 0xfd, 0x6a,
+	0xc8, 0xc2, 0x8a, 0xd8, 0xe4, 0xae, 0x93, 0x50, 0x19, 0x67, 0xae, 0x7d, 0x50, 0xd3, 0x49, 0xf4,
+	0xd9, 0xfb, 0x6a, 0xc1, 0xc6, 0x4b, 0x1e, 0x27, 0x21, 0x4d, 0x5f, 0xf1, 0x08, 0xc9, 0x13, 0x70,
+	0x4c, 0x99, 0x8c, 0x47, 0xb9, 0xc0, 0x46, 0x6b, 0xdf, 0xaf, 0xb4, 0x52, 0x60, 0x5f, 0xf0, 0x84,
+	0x69, 0xfc, 0xd9, 0x52, 0xb0, 0x7e, 0x5d, 0x9c, 0xc9, 0x33, 0x00, 0x45, 0x7b, 0x29, 0xe6, 0x64,
+	0xdb, 0x90, 0xef, 0xce, 0x21, 0x77, 0x35, 0xa8, 0x60, 0x3b, 0xaa, 0xbc, 0x90, 0x23, 0x70, 0xc2,
+	0x7e, 0x92, 0x46, 0x12, 0x59, 0xe6, 0xd6, 0x0e, 0x6a, 0x87, 0x1b, 0xad, 0x3b, 0x73, 0xd8, 0x1a,
+	0x1b, 0x4c, 0x91, 0xed, 0x55, 0x58, 0xd6, 0xf9, 0xbc, 0x8f, 0x36, 0xd4, 0x67, 0xaa, 0x23, 0xdb,
+	0x60, 0x2b, 0x51, 0xf8, 0x60, 0x2b, 0x41, 0xf6, 0x8b, 0xee, 0xd4, 0x48, 0xe4, 0x05, 0x3a, 0x79,
+	0xf9, 0xdd, 0x91, 0x40, 0xd2, 0x86, 0x6d, 0x13, 0x9c, 0x2d, 0x62, 0x51, 0xff, 0xc1, 0x96, 0x8e,
+	0x75, 0x4a, 0x06, 0x39, 0x81, 0x7a, 0x6e, 0xc1, 0x54, 0x64, 0xd9, 0x88, 0x2c, 0xf4, 0x21, 0xd8,
+	0x36, 0xa4, 0xa9, 0xcc, 0x11, 0x40, 0x58, 0x8e, 0x34, 0x73, 0x57, 0x8c, 0xc2, 0x7f, 0x55, 0x85,
+	0xc9, 0xc0, 0x83, 0x0a, 0xd0, 0xbb, 0x81, 0x9d, 0x59, 0xe9, 0x3f, 0x2c, 0xb8, 0x37, 0x19, 0x92,
+	0x5e, 0x91, 0xdc, 0x83, 0x62, 0x08, 0x7a, 0x47, 0x7e, 0xcf, 0x5c, 0xfb, 0xdb, 0xcc, 0x1f, 0x60,
+	0xe5, 0x42, 0x51, 0x85, 0xa4, 0x03, 0xbb, 0xe1, 0x50, 0x4a, 0x64, 0xea, 0x32, 0x77, 0x5a, 0x62,
+	0xb9, 0x47, 0xb7, 0x0e, 0xb3, 0x5e, 0x30, 0xb4, 0xa9, 0x5d, 0x89, 0x48, 0x1e, 0xc2, 0x1a, 0x0d,
+	0xf3, 0x0a, 0xec, 0xc5, 0x7b, 0x50, 0xe2, 0x5a, 0x9f, 0x2d, 0x58, 0x3b, 0x95, 0x88, 0x0a, 0x25,
+	0x79, 0x0e, 0xeb, 0x17, 0x74, 0x64, 0xfe, 0x1d, 0xe2, 0x56, 0x99, 0xd5, 0x5f, 0x6e, 0xef, 0xff,
+	0x39, 0x11, 0x91, 0x8e, 0xbc, 0x25, 0xd2, 0x81, 0xad, 0x92, 0x7f, 0x1c, 0xd3, 0x84, 0xfd, 0x8b,
+	0x48, 0xeb, 0x93, 0x05, 0x8e, 0x6e, 0xe8, 0xb5, 0x0e, 0x91, 0x13, 0xd8, 0xec, 0x62, 0xa6, 0x26,
+	0x8b, 0xb9, 0x68, 0xa7, 0x16, 0x54, 0xf6, 0x18, 0x9c, 0x53, 0x54, 0xc7, 0xa6, 0x67, 0xb2, 0x5b,
+	0x85, 0x19, 0xf7, 0x6f, 0x67, 0xb6, 0xaf, 0xbe, 0x8d, 0x1b, 0xd6, 0xf7, 0x71, 0xc3, 0xfa, 0x31,
+	0x6e, 0x58, 0x5f, 0x7e, 0x36, 0x96, 0x60, 0x3f, 0xe1, 0x7e, 0x2c, 0x45, 0xe8, 0xe3, 0x0d, 0x1d,
+	0x88, 0x14, 0x33, 0xbf, 0xaf, 0x09, 0xef, 0xb9, 0x4c, 0xa3, 0x76, 0xdd, 0x90, 0xdf, 0xe8, 0xf3,
+	0xb9, 0x7e, 0xbc, 0xce, 0xad, 0xb7, 0xf7, 0xe3, 0x44, 0xf5, 0x87, 0x3d, 0x3f, 0xe4, 0x83, 0xa6,
+	0x48, 0x58, 0x1c, 0x52, 0xd1, 0x54, 0x49, 0xd4, 0x6b, 0x8a, 0x94, 0x32, 0x86, 0xb2, 0x19, 0x72,
+	0x89, 0xbd, 0x55, 0xf3, 0xd6, 0x3d, 0xfa, 0x15, 0x00, 0x00, 0xff, 0xff, 0x1d, 0xc9, 0xec, 0x87,
+	0xff, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -631,6 +817,141 @@ func (m *HelloReply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Condition) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Condition) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Condition) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Args) > 0 {
+		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Args[iNdEx])
+			copy(dAtA[i:], m.Args[iNdEx])
+			i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.Args[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Funcname) > 0 {
+		i -= len(m.Funcname)
+		copy(dAtA[i:], m.Funcname)
+		i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.Funcname)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LogicalNode) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LogicalNode) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LogicalNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Childrens) > 0 {
+		for iNdEx := len(m.Childrens) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Childrens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintJoinOrder(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.Node != nil {
+		{
+			size := m.Node.Size()
+			i -= size
+			if _, err := m.Node.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LogicalNode_JoinNode) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LogicalNode_JoinNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.JoinNode != nil {
+		{
+			size, err := m.JoinNode.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintJoinOrder(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+func (m *LogicalNode_TableNode) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LogicalNode_TableNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.TableNode != nil {
+		{
+			size, err := m.TableNode.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintJoinOrder(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
 func (m *LogicalJoinNode) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -666,13 +987,13 @@ func (m *LogicalJoinNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintJoinOrder(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x2a
 		}
 	}
-	if len(m.Childrens) > 0 {
-		for iNdEx := len(m.Childrens) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.TableChildrens) > 0 {
+		for iNdEx := len(m.TableChildrens) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Childrens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.TableChildrens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -680,8 +1001,29 @@ func (m *LogicalJoinNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintJoinOrder(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x22
 		}
+	}
+	if len(m.JoinChildrens) > 0 {
+		for iNdEx := len(m.JoinChildrens) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.JoinChildrens[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintJoinOrder(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.JoinType) > 0 {
+		i -= len(m.JoinType)
+		copy(dAtA[i:], m.JoinType)
+		i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.JoinType)))
+		i--
+		dAtA[i] = 0x12
 	}
 	if len(m.Tp) > 0 {
 		i -= len(m.Tp)
@@ -693,7 +1035,7 @@ func (m *LogicalJoinNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *LogicalJoinNode_Condition) Marshal() (dAtA []byte, err error) {
+func (m *LogicalTableNode) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -703,12 +1045,12 @@ func (m *LogicalJoinNode_Condition) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *LogicalJoinNode_Condition) MarshalTo(dAtA []byte) (int, error) {
+func (m *LogicalTableNode) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *LogicalJoinNode_Condition) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *LogicalTableNode) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -717,19 +1059,31 @@ func (m *LogicalJoinNode_Condition) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if len(m.Args) > 0 {
-		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Args[iNdEx])
-			copy(dAtA[i:], m.Args[iNdEx])
-			i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.Args[iNdEx])))
+	if len(m.Conditions) > 0 {
+		for iNdEx := len(m.Conditions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Conditions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintJoinOrder(dAtA, i, uint64(size))
+			}
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x1a
 		}
 	}
-	if len(m.Funcname) > 0 {
-		i -= len(m.Funcname)
-		copy(dAtA[i:], m.Funcname)
-		i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.Funcname)))
+	if len(m.TableName) > 0 {
+		i -= len(m.TableName)
+		copy(dAtA[i:], m.TableName)
+		i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.TableName)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tp) > 0 {
+		i -= len(m.Tp)
+		copy(dAtA[i:], m.Tp)
+		i = encodeVarintJoinOrder(dAtA, i, uint64(len(m.Tp)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -832,6 +1186,73 @@ func (m *HelloReply) Size() (n int) {
 	return n
 }
 
+func (m *Condition) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Funcname)
+	if l > 0 {
+		n += 1 + l + sovJoinOrder(uint64(l))
+	}
+	if len(m.Args) > 0 {
+		for _, s := range m.Args {
+			l = len(s)
+			n += 1 + l + sovJoinOrder(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *LogicalNode) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Node != nil {
+		n += m.Node.Size()
+	}
+	if len(m.Childrens) > 0 {
+		for _, e := range m.Childrens {
+			l = e.Size()
+			n += 1 + l + sovJoinOrder(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *LogicalNode_JoinNode) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.JoinNode != nil {
+		l = m.JoinNode.Size()
+		n += 1 + l + sovJoinOrder(uint64(l))
+	}
+	return n
+}
+func (m *LogicalNode_TableNode) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TableNode != nil {
+		l = m.TableNode.Size()
+		n += 1 + l + sovJoinOrder(uint64(l))
+	}
+	return n
+}
 func (m *LogicalJoinNode) Size() (n int) {
 	if m == nil {
 		return 0
@@ -842,8 +1263,18 @@ func (m *LogicalJoinNode) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovJoinOrder(uint64(l))
 	}
-	if len(m.Childrens) > 0 {
-		for _, e := range m.Childrens {
+	l = len(m.JoinType)
+	if l > 0 {
+		n += 1 + l + sovJoinOrder(uint64(l))
+	}
+	if len(m.JoinChildrens) > 0 {
+		for _, e := range m.JoinChildrens {
+			l = e.Size()
+			n += 1 + l + sovJoinOrder(uint64(l))
+		}
+	}
+	if len(m.TableChildrens) > 0 {
+		for _, e := range m.TableChildrens {
 			l = e.Size()
 			n += 1 + l + sovJoinOrder(uint64(l))
 		}
@@ -860,19 +1291,23 @@ func (m *LogicalJoinNode) Size() (n int) {
 	return n
 }
 
-func (m *LogicalJoinNode_Condition) Size() (n int) {
+func (m *LogicalTableNode) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Funcname)
+	l = len(m.Tp)
 	if l > 0 {
 		n += 1 + l + sovJoinOrder(uint64(l))
 	}
-	if len(m.Args) > 0 {
-		for _, s := range m.Args {
-			l = len(s)
+	l = len(m.TableName)
+	if l > 0 {
+		n += 1 + l + sovJoinOrder(uint64(l))
+	}
+	if len(m.Conditions) > 0 {
+		for _, e := range m.Conditions {
+			l = e.Size()
 			n += 1 + l + sovJoinOrder(uint64(l))
 		}
 	}
@@ -1076,158 +1511,7 @@ func (m *HelloReply) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *LogicalJoinNode) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowJoinOrder
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: LogicalJoinNode: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: LogicalJoinNode: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Tp", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowJoinOrder
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Tp = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Childrens", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowJoinOrder
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Childrens = append(m.Childrens, &LogicalJoinNode{})
-			if err := m.Childrens[len(m.Childrens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Conditions", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowJoinOrder
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Conditions = append(m.Conditions, &LogicalJoinNode_Condition{})
-			if err := m.Conditions[len(m.Conditions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipJoinOrder(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthJoinOrder
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *LogicalJoinNode_Condition) Unmarshal(dAtA []byte) error {
+func (m *Condition) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1342,6 +1626,527 @@ func (m *LogicalJoinNode_Condition) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *LogicalNode) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJoinOrder
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogicalNode: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogicalNode: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JoinNode", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &LogicalJoinNode{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Node = &LogicalNode_JoinNode{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TableNode", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &LogicalTableNode{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Node = &LogicalNode_TableNode{v}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Childrens", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Childrens = append(m.Childrens, &LogicalNode{})
+			if err := m.Childrens[len(m.Childrens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJoinOrder(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LogicalJoinNode) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJoinOrder
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogicalJoinNode: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogicalJoinNode: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tp", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tp = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JoinType", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.JoinType = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field JoinChildrens", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.JoinChildrens = append(m.JoinChildrens, &LogicalJoinNode{})
+			if err := m.JoinChildrens[len(m.JoinChildrens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TableChildrens", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TableChildrens = append(m.TableChildrens, &LogicalTableNode{})
+			if err := m.TableChildrens[len(m.TableChildrens)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Conditions", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Conditions = append(m.Conditions, &Condition{})
+			if err := m.Conditions[len(m.Conditions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJoinOrder(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LogicalTableNode) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowJoinOrder
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogicalTableNode: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogicalTableNode: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tp", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tp = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TableName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TableName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Conditions", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowJoinOrder
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Conditions = append(m.Conditions, &Condition{})
+			if err := m.Conditions[len(m.Conditions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipJoinOrder(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthJoinOrder
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *State) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1401,7 +2206,7 @@ func (m *State) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.CurrentJoinTree == nil {
-				m.CurrentJoinTree = &LogicalJoinNode{}
+				m.CurrentJoinTree = &LogicalNode{}
 			}
 			if err := m.CurrentJoinTree.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -1436,7 +2241,7 @@ func (m *State) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Actions = append(m.Actions, &LogicalJoinNode{})
+			m.Actions = append(m.Actions, &LogicalNode{})
 			if err := m.Actions[len(m.Actions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

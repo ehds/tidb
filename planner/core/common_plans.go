@@ -1347,6 +1347,10 @@ func (e *Explain) explainPlanInJSONFormat(currentNode *JSONOperatorRow, p Plan, 
 			err = e.explainPlanInJSONFormat(currentNode, pchild, "cop[tikv]", "(Build)", true)
 		}
 		err = e.explainPlanInJSONFormat(currentNode, x.tablePlan, "cop[tikv]", "(Probe)", true)
+	case *PhysicalIndexScan:
+		currentNode.AccessObject = ("table_name:" + x.Table.Name.L)
+	case *PhysicalTableScan:
+		currentNode.AccessObject = ("table_name:" + x.Table.Name.L)
 	case *Insert:
 		if x.SelectPlan != nil {
 			err = e.explainPlanInJSONFormat(currentNode, x.SelectPlan, "root", "", true)

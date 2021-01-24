@@ -138,35 +138,39 @@ func (s *joinReorderGreedySolver) checkConnectionAndMakeJoin(leftNode, rightNode
 	return s.newJoinWithEdges(leftNode, rightNode, usedEdges, otherConds), remainOtherConds
 }
 
-func encodeLogicalPlan(p LogicalPlan) *LogicalJoinNode {
-	var joinNode = LogicalJoinNode{}
-	joinNode.Tp = p.TP()
-	for _, node := range p.Children() {
-		joinNode.Childrens = append(joinNode.Childrens, encodeLogicalPlan(node))
-	}
-	if join, isJoin := p.(*LogicalJoin); isJoin {
-		for _, condition := range join.EqualConditions {
+func encodeLogicalPlan(p LogicalPlan) *LogicalNode {
+	var currentNode = LogicalNode{}
+	switch x := p.(type) {
+	case *LogicalJoin:
+		var joinNode = LogicalJoinNode{Tp: x.TP(), JoinType: x.JoinType.String()}
+		for _, child := range p.Children() {
+			currentNode.Childrens = append(currentNode.Childrens, encodeLogicalPlan(child))
+		}
+		for _, condition := range x.EqualConditions {
 			var args []string
 			funcname := condition.FuncName.String()
 			for _, arg := range condition.GetArgs() {
 				args = append(args, arg.String())
 			}
-			joinNode.Conditions = append(joinNode.Conditions, &LogicalJoinNode_Condition{Funcname: funcname, Args: args})
+			joinNode.Conditions = append(joinNode.Conditions, &Condition{Funcname: funcname, Args: args})
 		}
-	}
-	if dataSource, isDataSource := p.(*DataSource); isDataSource {
-		for _, condition := range dataSource.allConds {
+		currentNode.Node = &LogicalNode_JoinNode{&joinNode}
+
+	case *DataSource:
+		var tableNode = LogicalTableNode{Tp: x.TP(), TableName: x.TableInfo().Name.L}
+		for _, condition := range x.allConds {
 			if scalarFunc, isScalar := condition.(*expression.ScalarFunction); isScalar {
 				var args []string
 				funcname := scalarFunc.FuncName.String()
 				for _, arg := range scalarFunc.GetArgs() {
 					args = append(args, arg.String())
 				}
-				joinNode.Conditions = append(joinNode.Conditions, &LogicalJoinNode_Condition{Funcname: funcname, Args: args})
+				tableNode.Conditions = append(tableNode.Conditions, &Condition{Funcname: funcname, Args: args})
 			}
 		}
+		currentNode.Node = &LogicalNode_TableNode{&tableNode}
 	}
-	return &joinNode
+	return &currentNode
 }
 func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []LogicalPlan) (int, error) {
 	address := "127.0.0.1:50051"

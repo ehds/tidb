@@ -15,9 +15,11 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/pingcap/parser/ast"
@@ -79,26 +81,47 @@ func (s *joinReorderGreedySolver) constructConnectedJoinTree() (*jrNode, error) 
 		bestIdx := -1
 		var finalRemainOthers []expression.Expression
 		var bestJoin LogicalPlan
-		var testActions []LogicalPlan
+		var testActions []*jrNode
+		var originIndex []int
 		for i, node := range s.curJoinGroup {
-			newJoin, remainOthers := s.checkConnectionAndMakeJoin(curJoinTree.p, node.p)
-			testActions = append(testActions, node.p)
-			s.getAction(curJoinTree.p, testActions)
+			newJoin, _ := s.checkConnectionAndMakeJoin(curJoinTree.p, node.p)
 			if newJoin == nil {
 				continue
 			}
-			_, err := newJoin.recursiveDeriveStats(nil)
-			if err != nil {
-				return nil, err
-			}
-			curCost := s.calcJoinCumCost(newJoin, curJoinTree, node)
-			if bestCost > curCost {
-				bestCost = curCost
-				bestJoin = newJoin
-				bestIdx = i
-				finalRemainOthers = remainOthers
-			}
+			testActions = append(testActions, node)
+			originIndex = append(originIndex, i)
 		}
+		if len(testActions) == 0 {
+			break
+		}
+		bestActionIndex, err := s.getAction(curJoinTree.p, testActions)
+		if err != nil {
+			break
+		}
+		bestAction := testActions[bestActionIndex]
+		bestJoin, finalRemainOthers = s.checkConnectionAndMakeJoin(curJoinTree.p, bestAction.p)
+		_, err = bestJoin.recursiveDeriveStats(nil)
+		bestCost = s.calcJoinCumCost(bestJoin, curJoinTree, bestAction)
+		bestIdx = originIndex[bestActionIndex]
+		//curCost := s.calcJoinCumCost(bestJoin, curJoinTree, bestAction)
+		// for i, node := range s.curJoinGroup {
+		// 	newJoin, remainOthers := s.checkConnectionAndMakeJoin(curJoinTree.p, node.p)
+		// 	testActions = append(testActions, node.p)
+		// 	if newJoin == nil {
+		// 		continue
+		// 	}
+		// 	_, err := newJoin.recursiveDeriveStats(nil)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	curCost := s.calcJoinCumCost(newJoin, curJoinTree, node)
+		// 	if bestCost > curCost {
+		// 		bestCost = curCost
+		// 		bestJoin = newJoin
+		// 		bestIdx = i
+		// 		finalRemainOthers = remainOthers
+		// 	}
+		// }
 		// If we could find more join node, meaning that the sub connected graph have been totally explored.
 		if bestJoin == nil {
 			break
@@ -109,6 +132,7 @@ func (s *joinReorderGreedySolver) constructConnectedJoinTree() (*jrNode, error) 
 		}
 		s.curJoinGroup = append(s.curJoinGroup[:bestIdx], s.curJoinGroup[bestIdx+1:]...)
 		s.otherConds = finalRemainOthers
+
 	}
 	return curJoinTree, nil
 }
@@ -172,7 +196,12 @@ func encodeLogicalPlan(p LogicalPlan) *LogicalNode {
 	}
 	return &currentNode
 }
-func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []LogicalPlan) (int, error) {
+func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []*jrNode) (int, error) {
+	fmt.Println(len(actions))
+	if len(actions) == 1 {
+		fmt.Println("not need to connect")
+		return 0, nil
+	}
 	address := "127.0.0.1:50051"
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -186,7 +215,7 @@ func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []L
 	state := State{}
 	state.CurrentJoinTree = encodeLogicalPlan(curJoinTree)
 	for _, action := range actions {
-		state.Actions = append(state.Actions, encodeLogicalPlan(action))
+		state.Actions = append(state.Actions, encodeLogicalPlan(action.p))
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -196,5 +225,9 @@ func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []L
 		return 0, nil
 	}
 	log.Printf("Greeting: %s", r.GetMessage())
-	return 1, nil
+	index, err := strconv.Atoi(r.GetMessage())
+	if err != nil {
+		return 0, err
+	}
+	return index, nil
 }

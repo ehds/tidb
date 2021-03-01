@@ -63,7 +63,16 @@ func (s *joinReorderGreedySolver) solve(joinNodePlans []LogicalPlan) (LogicalPla
 
 	var cartesianGroup []LogicalPlan
 	for len(s.curJoinGroup) > 0 {
-		newNode, err := s.constructConnectedJoinTree()
+		var err error
+		var newNode *jrNode
+		if s.use_dqn_server() {
+			fmt.Println("use dqn")
+			newNode, err = s.constructConnectedJoinTreeDQN()
+		} else {
+			fmt.Println("use greedy")
+			newNode, err = s.constructConnectedJoinTree()
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +82,64 @@ func (s *joinReorderGreedySolver) solve(joinNodePlans []LogicalPlan) (LogicalPla
 	return s.makeBushyJoin(cartesianGroup), nil
 }
 
+func (s *joinReorderGreedySolver) use_dqn_server() bool {
+	address := "127.0.0.1:50051"
+	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect %v", err)
+	}
+	defer conn.Close()
+
+	joinOrderClient := NewJoinOrderClient(conn)
+	empty := Empty{}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := joinOrderClient.IsDQN(ctx, &empty)
+	if err != nil {
+		return false
+	}
+	return r.Value
+}
 func (s *joinReorderGreedySolver) constructConnectedJoinTree() (*jrNode, error) {
+	curJoinTree := s.curJoinGroup[0]
+	s.curJoinGroup = s.curJoinGroup[1:]
+	for {
+		bestCost := math.MaxFloat64
+		bestIdx := -1
+		var finalRemainOthers []expression.Expression
+		var bestJoin LogicalPlan
+		for i, node := range s.curJoinGroup {
+			newJoin, remainOthers := s.checkConnectionAndMakeJoin(curJoinTree.p, node.p)
+			if newJoin == nil {
+				continue
+			}
+			_, err := newJoin.recursiveDeriveStats(nil)
+			if err != nil {
+				return nil, err
+			}
+			curCost := s.calcJoinCumCost(newJoin, curJoinTree, node)
+			if bestCost > curCost {
+				bestCost = curCost
+				bestJoin = newJoin
+				bestIdx = i
+				finalRemainOthers = remainOthers
+			}
+		}
+		// If we could find more join node, meaning that the sub connected graph have been totally explored.
+		if bestJoin == nil {
+			break
+		}
+		curJoinTree = &jrNode{
+			p:       bestJoin,
+			cumCost: bestCost,
+		}
+		s.curJoinGroup = append(s.curJoinGroup[:bestIdx], s.curJoinGroup[bestIdx+1:]...)
+		s.otherConds = finalRemainOthers
+	}
+	return curJoinTree, nil
+}
+
+func (s *joinReorderGreedySolver) constructConnectedJoinTreeDQN() (*jrNode, error) {
 	curJoinTree := s.curJoinGroup[0]
 	s.curJoinGroup = s.curJoinGroup[1:]
 	for {

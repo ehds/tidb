@@ -268,6 +268,7 @@ func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []*
 		fmt.Println("not need to connect")
 		return 0, nil
 	}
+	originalSQL := s.ctx.GetSessionVars().StmtCtx.OriginalSQL
 	address := "127.0.0.1:50051"
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -279,6 +280,7 @@ func (s *joinReorderGreedySolver) getAction(curJoinTree LogicalPlan, actions []*
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	//defer cancel()
 	state := State{}
+	state.OriginalSql = originalSQL
 	state.CurrentJoinTree = encodeLogicalPlan(curJoinTree)
 	for _, action := range actions {
 		state.Actions = append(state.Actions, encodeLogicalPlan(action.p))
